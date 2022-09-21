@@ -1,0 +1,152 @@
+//Stream Operations Part 3
+
+import java.util.*;
+import java.util.stream.*;
+import java.util.stream.Collectors;
+public class MyClass {
+    public static void main(String args[]) {
+     createParallelStreamAndReverseTheOrder();
+     generateInfiniteIntegers();
+     generateInfiniteDouble();
+     flattenStreamOfArrays();
+     printingStreamAsIntermediateOperation();
+    }
+    //create a parallel stream of integers and reverse the order
+    public static void createParallelStreamAndReverseTheOrder(){
+        List<Integer> lists = Arrays.asList(11, 22, 33, 44);
+        Stream<Integer> stream = lists.parallelStream();
+    
+        // Reverse and print the elements
+        stream.sorted(Comparator.reverseOrder()).collect(Collectors.toList()).forEach(System.out::println);
+        /*Output:
+            44
+            33
+            22
+            11
+        */
+    }
+    //generate infinite stream of integers
+    public static void generateInfiniteIntegers(){
+        
+        //---------------------using IntStream.iterate------------------------------
+        //gives an ordered sequential stream
+        IntStream.iterate(0,i->i+1).limit(4).forEach(System.out::println);
+        /*Output:
+            0
+            1
+            2
+            3
+        */
+        
+        //--------------------using Random.Ints()-----------------------------------
+        new Random().ints().limit(4).forEach(System.out::println);
+        /*Output:
+            -110190809
+            -1624492223
+            236626060
+            -1682167237
+        */
+        
+        //---------------------using IntStream.generate()-----------------------------
+        IntStream.generate(new Random()::nextInt).limit(4).forEach(System.out::println);
+        /*Output:
+            -479631087
+            1768036124
+            1276957329
+            -817533831
+        */
+    }
+    //generate infinite stream of double
+    public static void generateInfiniteDouble(){
+        
+        //---------------------using DoubleStream.iterate------------------------------
+        //gives an ordered sequential stream
+        DoubleStream.iterate(0,i->i+1).limit(4).forEach(System.out::println);
+        /*Output:
+            0.0
+            1.0
+            2.0
+            3.0
+        */
+        
+        //--------------------using Random.doubles()-----------------------------------
+        new Random().doubles().limit(4).forEach(System.out::println);
+        /*Output:
+            0.38449963418030353
+            0.43138809247089827
+            0.9644279322052545
+            0.837673679540234
+        */
+        
+        //---------------------using DoubleStream.generate()-----------------------------
+        DoubleStream.generate(new Random()::nextDouble).limit(4).forEach(System.out::println);
+        /*Output:
+            0.7427072698567407
+            0.7872987903283407
+            0.7042889490545048
+            0.032999433656936694
+        */
+    }
+    //Flatten Stream of Arrays in Java using forEach loop
+    public static void flattenStreamOfArrays(){
+        Integer[][] arr = {{ 1, 2 },{ 3, 4, 5, 6 },{ 7, 8, 9 }};
+        //------------------------using Arrays.stream()-----------------
+        Arrays.stream(arr).flatMap(i->Arrays.stream(i)).collect(Collectors.toList()).forEach(System.out::println);
+        List<Integer> list=new ArrayList();
+        Arrays.stream(arr).flatMap(i->Arrays.stream(i)).forEach(list::add);
+        for(int i:list){System.out.println(i);}
+        /*Output:
+            1
+            2
+            3
+            4
+            5
+            6
+            7
+            8
+            9
+        */
+    }
+    //Flatten Stream of ArrayList in Java using forEach loop
+    public static void flattenStreamOfArrayLists(){
+        List<Integer> a = Arrays.asList(1, 2);
+        List<Integer> b = Arrays.asList(3, 4, 5, 6);
+        List<Integer> c = Arrays.asList(7, 8, 9);
+        
+        List<List<Integer> > arr = new ArrayList<List<Integer> >();
+        arr.add(a);
+        arr.add(b);
+        arr.add(c);
+        
+        List<Integer> list = new ArrayList<Integer>();
+        arr.stream().flatMap(i->i.stream()).forEach(list::add);
+        for(int i:list){System.out.println(i);}
+        /*Output:
+            1
+            2
+            3
+            4
+            5
+            6
+            7
+            8
+            9
+        */
+    }
+    //Interesting Concept
+    //Print elements of a Stream in Java 8 without consuming the stream
+    public static void printingStreamAsIntermediateOperation(){
+        //-------------use of peek()--------------------------------------------------------
+        //we can't use foreach again cause it consumes the stream
+        Stream<String> stream = Stream.of("Hey", "Hola","Bye", "Ok","Hi", "Merci");
+        stream.filter(i->i.startsWith("H")).peek(System.out::println).map(String::toLowerCase).peek(System.out::println).count();
+        /*Output:
+            Hey
+            hey
+            Hola
+            hola
+            Hi
+            hi
+        */
+    }
+}
