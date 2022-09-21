@@ -10,6 +10,10 @@ public class MyClass {
      generateInfiniteDouble();
      flattenStreamOfArrays();
      printingStreamAsIntermediateOperation();
+     intStreamtoString();
+     int[] arr = { 1, 2, 3, 4, 5 };
+     int index=3;
+      removeElementAtSpecifiedIndex(arr,index);
     }
     //create a parallel stream of integers and reverse the order
     public static void createParallelStreamAndReverseTheOrder(){
@@ -147,6 +151,25 @@ public class MyClass {
             hola
             Hi
             hi
+        */
+    }
+    //Convert IntStream to String in Java
+    public static void intStreamtoString(){
+        IntStream intStream = "How you doing?".chars();
+        System.out.println(intStream.collect(StringBuilder::new,StringBuilder::appendCodePoint,StringBuilder::append).toString());
+        /*Output:
+        How you doing?
+        */
+    }
+    //Remove an Element at Specific Index from an Array in Java
+    public static void removeElementAtSpecifiedIndex(int arr[],int index){
+        int ar[]=IntStream.range(0,arr.length).filter(i->i!=index).map(i->arr[i]).toArray();
+        for(int i:ar){System.out.println(i);}
+        /*Output:
+            1
+            2
+            3
+            5
         */
     }
 }
