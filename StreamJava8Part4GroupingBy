@@ -1,0 +1,154 @@
+//Use of groupingBy method in various ways
+//Can help solve complex queries without using SQL
+//reference https://www.baeldung.com/java-groupingby-collector
+
+import java.util.*;
+import java.util.stream.*;
+import java.util.stream.Collectors;
+import java.util.Comparator;
+public class MyClass {
+    
+    public static void main(String args[]) {
+        List<BlogPost> list = initializeValues();
+        groupBySingleColumn(list);
+        ComplexGrouping(list);
+        groupByMultipleFields(list);
+        groupByTypeGetAverageLikes(list);
+        groupByTypeGetSumOfLikes(list);
+        groupByTypeMaxMin(list);
+    }
+    public static List<BlogPost> initializeValues(){
+        List<BlogPost> list=Arrays.asList(new BlogPost("Shoe Dog","Phil Knight",BlogPostType.BUSINESS,30),
+        new BlogPost("Made In America","Sam Walton",BlogPostType.BUSINESS,25),
+        new BlogPost("Life's Amazing Secrets","Gaur Gopal Das",BlogPostType.INSPIRATIONAL,20),
+        new BlogPost("The Way Of the Monk","Gaur Gopal Das",BlogPostType.INSPIRATIONAL,15),
+        new BlogPost("Attitude is Everything","Keller Jeff",BlogPostType.INSPIRATIONAL,25),
+        new BlogPost("Fault In Our Stars","John Green",BlogPostType.ROMANCE,30));
+        return list;
+        
+    }
+    //Grouping by a Single Column
+    public static void groupBySingleColumn(List<BlogPost> list){
+        //----------------------------grouping by Author------------------------------------------
+        Map<String,List<BlogPost>> mapGroupByAuthor=list.stream().collect(Collectors.groupingBy(BlogPost::getAuthor));
+        System.out.println(mapGroupByAuthor);
+        /*Output :
+        {Phil Knight=[title : Shoe Dog, author : Phil Knight, type : BUSINESS, likes : 30], Sam Walton=[title : Made In America, author : Sam Walton, type : BUSINESS, likes : 25], John Green=[title : Fault In Our Stars, author : John Green, type : ROMANCE, likes : 30], Gaur Gopal Das=[title : Life's Amazing Secrets, author : Gaur Gopal Das, type : INSPIRATIONAL, likes : 20, title : The Way Of the Monk, author : Gaur Gopal Das, type : INSPIRATIONAL, likes : 15], Keller Jeff=[title : Attitude is Everything, author : Keller Jeff, type : INSPIRATIONAL, likes : 25]}
+        */
+        
+        //-----------------------------grouping by type (BlogPostType)----------------------------
+        Map<BlogPostType,List<BlogPost>> mapGroupByType=list.stream().collect(Collectors.groupingBy(BlogPost::getType));
+        System.out.println(mapGroupByType);
+        /*Output :
+        {ROMANCE=[title : Fault In Our Stars, author : John Green, type : ROMANCE, likes : 30], INSPIRATIONAL=[title : Life's Amazing Secrets, author : Gaur Gopal Das, type : INSPIRATIONAL, likes : 20, title : The Way Of the Monk, author : Gaur Gopal Das, type : INSPIRATIONAL, likes : 15, title : Attitude is Everything, author : Keller Jeff, type : INSPIRATIONAL, likes : 25], BUSINESS=[title : Shoe Dog, author : Phil Knight, type : BUSINESS, likes : 30, title : Made In America, author : Sam Walton, type : BUSINESS, likes : 25]}
+        */
+    }
+    //Complex Grouping-> Don't use it
+    public static void ComplexGrouping(List<BlogPost> list){
+      
+      Map<Tuple, List<BlogPost>> postsPerTypeAndAuthor = list.stream()
+  .collect(Collectors.groupingBy(post -> new Tuple(post.getType(), post.getAuthor())));
+        //Map<Tuple, List<BlogPost>> postsPerTypeAndAuthor = list.stream().collect(Collectors.groupingBy(i->i.groupBy(i.getType(),i.getAuthor())));
+        System.out.println(postsPerTypeAndAuthor);
+        
+    }
+    //Grouping by Multiple Fields
+    public static void groupByMultipleFields(List<BlogPost> list){
+        Map<BlogPostType,Map<String,List<BlogPost>>> map=list.stream().collect(Collectors.groupingBy(BlogPost::getType,Collectors.groupingBy(BlogPost::getAuthor)));
+        map.forEach((K,V)->{
+            System.out.print(K+ " ");
+            V.forEach((k,v)->{
+                System.out.println(k+" "+v+"\t");
+            });
+            System.out.println();
+        });
+        /*Output:
+        ROMANCE John Green [title : Fault In Our Stars, author : John Green, type : ROMANCE, likes : 30]
+        
+        INSPIRATIONAL Gaur Gopal Das [title : Life's Amazing Secrets, author : Gaur Gopal Das, type : INSPIRATIONAL, likes : 20, title : The Way Of the Monk, author : Gaur Gopal Das, type : INSPIRATIONAL, likes : 15]
+        Keller Jeff [title : Attitude is Everything, author : Keller Jeff, type : INSPIRATIONAL, likes : 25]
+        
+        BUSINESS Phil Knight [title : Shoe Dog, author : Phil Knight, type : BUSINESS, likes : 30]
+        Sam Walton [title : Made In America, author : Sam Walton, type : BUSINESS, likes : 25]
+        */
+    }
+    //Getting the Average from Grouped Results
+    public static void groupByTypeGetAverageLikes(List<BlogPost> list){
+        Map<BlogPostType,Double> map=list.stream().collect(Collectors.groupingBy(BlogPost::getType,Collectors.averagingInt(BlogPost::getLikes)));
+        map.forEach((K,V)->{System.out.println(K+" "+V);});
+        /*Output
+            ROMANCE 30.0
+            INSPIRATIONAL 20.0
+            BUSINESS 27.5
+        */
+    }
+     //Getting the Sum from Grouped Results
+    public static void groupByTypeGetSumOfLikes(List<BlogPost> list){
+        Map<BlogPostType,Integer> map=list.stream().collect(Collectors.groupingBy(BlogPost::getType,Collectors.summingInt(BlogPost::getLikes)));
+        map.forEach((K,V)->{System.out.println(K+" "+V);});
+        /*Output
+            ROMANCE 30
+            INSPIRATIONAL 60
+            BUSINESS 55
+        */
+    }
+    //Getting the Maximum or Minimum from Grouped Results
+    public static void groupByTypeMaxMin(List<BlogPost> list){
+        //--------------Optional is used to prevent code to return null pointer exception-------------
+        Map<BlogPostType,Optional<BlogPost>> mapMax=list.stream().collect(Collectors.groupingBy(BlogPost::getType,Collectors.maxBy(Comparator.comparingInt(BlogPost::getLikes))));
+        mapMax.forEach((K,V)->{if(V.isPresent()){System.out.println(K+" "+V.get());}});
+        /*Output
+            ROMANCE title : Fault In Our Stars, author : John Green, type : ROMANCE, likes : 30
+            INSPIRATIONAL title : Attitude is Everything, author : Keller Jeff, type : INSPIRATIONAL, likes : 25
+            BUSINESS title : Shoe Dog, author : Phil Knight, type : BUSINESS, likes : 30
+        */
+        
+    }
+}
+class BlogPost {
+    String title;
+    String author;
+    BlogPostType type;
+    int likes;
+
+    BlogPost(String title,String author,BlogPostType type,int likes){
+        this.title=title;
+        this.author=author;
+        this.type=type;
+        this.likes=likes;
+    }
+    
+    public String getAuthor(){return author;}
+    public String getTitle(){return title;}
+    public BlogPostType getType(){return type;}
+    public int getLikes(){return likes;}
+    public String toString(){
+        return "title : "+title+", author : "+author+", type : "+type+", likes : "+likes;
+    }
+    public Tuple groupBy(BlogPostType type,String author){
+        if(this.type==type && this.author==author){
+            return new Tuple(type,author);
+        }
+        return new Tuple(type,author);
+    }
+}
+
+enum BlogPostType {
+    INSPIRATIONAL,
+    BUSINESS,
+    ROMANCE
+}
+class Tuple {
+    BlogPostType type;
+    String author;
+    Tuple(BlogPostType type,String author)
+    {
+        this.type=type;
+        this.author=author;
+    }
+    public BlogPostType getType(){return type;}
+    public String getAuthor(){return author;}
+    public String toString(){
+        return "Type : "+type+", Author : "+author;
+    }
+}
